@@ -1,0 +1,1 @@
+<li><a href="buscar.php">Buscar</a></li>

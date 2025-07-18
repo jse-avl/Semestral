@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://localhost/wsdl"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             name="MovieService"
+             targetNamespace="http://localhost/wsdl">
+
+  <message name="getMovieRatingsRequest">
+    <part name="parameters" type="xsd:anyType"/>
+  </message>
+
+  <message name="getMovieRatingsResponse">
+    <part name="result" type="xsd:string"/>
+  </message>
+
+  <portType name="MovieServicePortType">
+    <operation name="getMovieRatings">
+      <input message="tns:getMovieRatingsRequest"/>
+      <output message="tns:getMovieRatingsResponse"/>
+    </operation>
+  </portType>
+
+  <binding name="MovieServiceBinding" type="tns:MovieServicePortType">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="getMovieRatings">
+      <soap:operation soapAction="getMovieRatings"/>
+      <input><soap:body use="encoded" namespace="http://localhost/wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></input>
+      <output><soap:body use="encoded" namespace="http://localhost/wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></output>
+    </operation>
+  </binding>
+
+  <service name="MovieService">
+    <port name="MovieServicePort" binding="tns:MovieServiceBinding">
+      <soap:address location="http://localhost/Semestral/soap_server.php"/>
+    </port>
+  </service>
+</definitions>

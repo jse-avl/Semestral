@@ -1,0 +1,26 @@
+# Evitar que se vean archivos .bak, .sql, .ini, etc.
+<FilesMatch "\.(bak|sql|ini|log|md)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Seguridad contra XSS
+Header set X-XSS-Protection "1; mode=block"
+
+# Evitar carga de archivos en frames (clickjacking)
+Header set X-Frame-Options "DENY"
+
+# No permitir sniffing de contenido
+Header set X-Content-Type-Options "nosniff"
+
+# Política de contenido básica (ajústala según tus necesidades)
+Header set Content-Security-Policy "default-src 'self'; img-src 'self' https://image.tmdb.org"
+
+# Redireccionar automáticamente a index.php si no se especifica página
+DirectoryIndex index.php
+
+# Activar URLs limpias (si decides usar rutas sin .php)
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)$ index.php [QSA,L]
