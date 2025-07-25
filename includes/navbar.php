@@ -30,7 +30,7 @@
   
     <form method="GET" action="buscar.php" class="nav-search-form">
   <input class="flip-card__input" type="text" name="q" placeholder="Buscar películas..." maxlength="100" required>
-  <button class="flip-card__btn"  type="submit">🔍</button>
+  <button class="flip-card__btn"  type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
 </form>
 
  <div class="logo">
