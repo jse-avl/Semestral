@@ -3,7 +3,7 @@ session_start();
 require 'db.php';
 require 'tmdb.php';
 
-if (!isset($_SESSION['user']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')) {
+if (!isset($_SESSION['user'])) {
     header('Location: login.php');
     exit;
 }
@@ -14,13 +14,18 @@ if (!$movieId) {
 }
 
 // Obtener ID del usuario
-$stmtUser = $pdo->prepare("SELECT id FROM users WHERE username = ?");
-$stmtUser->execute([$_SESSION['user']]);
-$userId = $stmtUser->fetchColumn();
+$role = $_SESSION['role'] ?? '';
+$userId = null;
 
-if (!$userId) {
-    header('Location: login.php');
-    exit;
+if ($role === 'user') {
+    $stmtUser = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+    $stmtUser->execute([$_SESSION['user']]);
+    $userId = $stmtUser->fetchColumn();
+
+    if (!$userId) {
+        header('Location: login.php');
+        exit;
+    }
 }
 
 // Obtener detalles desde la API TMDB (incluyendo trailers)
@@ -53,6 +58,7 @@ $stmtFav->execute([$userId, $movieId]);
 $isFavorite = $stmtFav->fetchColumn() > 0;
 
 // Procesar nueva valoración
+$rating = isset($_POST['rating']) ? (int) $_POST['rating'] : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rating = (int) $_POST['rating'];
     $comment = htmlspecialchars(trim($_POST['comment']), ENT_QUOTES, 'UTF-8');
@@ -101,9 +107,11 @@ try {
       <div class="movie-text">
         <p><strong>Fecha de estreno:</strong> <?= $release ?></p>
         <p><strong>Sinopsis:</strong> <?= htmlspecialchars($overview) ?></p>
-        <button id="favoriteBtn" class="fav-btn" onclick="toggleFavorite(<?= $movieId ?>)">
-          <?= $isFavorite ? '💔 Quitar de Favoritos' : '❤️ Agregar a Favoritos' ?>
-        </button>
+        <?php if ($role === 'user' && $userId): ?>
+  <button id="favoriteBtn" class="fav-btn" onclick="toggleFavorite(<?= $movieId ?>)">
+    <?= $isFavorite ? '💔 Quitar de Favoritos' : '❤️ Agregar a Favoritos' ?>
+  </button>
+<?php endif; ?>
       </div>
     </div>
 
@@ -117,12 +125,13 @@ try {
       </div>
     <?php endif; ?>
 
-    <?php if ($myRating): ?>
-      <p><strong>Tu valoración:</strong> ⭐ <?= $myRating['rating'] ?>/5</p>
-      <p><strong>Tu comentario:</strong> <?= $myRating['comment'] ?: 'Sin comentario' ?></p>
-    <?php endif; ?>
+    <?php if ($role === 'user' && $myRating): ?>
+  <p><strong>Tu valoración:</strong> ⭐ <?= $myRating['rating'] ?>/5</p>
+  <p><strong>Tu comentario:</strong> <?= $myRating['comment'] ?: 'Sin comentario' ?></p>
+<?php endif; ?>
   </div>
 
+  <?php if ($role === 'user'): ?>
   <form method="POST" class="rating-form">
     <h3><?= $myRating ? 'Actualizar' : 'Enviar' ?> tu valoración</h3>
 
@@ -139,6 +148,8 @@ try {
 
     <button type="submit">Guardar Valoración</button>
   </form>
+  <?php endif; ?>
+
 
   <div class="comment-section">
     <h3>🗣️ Opiniones de otros usuarios</h3>
@@ -157,6 +168,13 @@ try {
           <p><strong><?= htmlspecialchars($c['username']) ?>:</strong> ⭐ <?= $c['rating'] ?>/5</p>
           <p><?= $c['comment'] ? htmlspecialchars($c['comment']) : 'Sin comentario' ?></p>
         </div>
+        <?php if ($role === 'admin'): ?>
+  <form method="POST" action="/Semestral/admin/delete_comment.php" class="delete-comment-form">
+  <input type="hidden" name="comment_id" value="<?= $c['id'] ?>">
+  <input type="hidden" name="movie_id" value="<?= $movieId ?>">
+  <button type="submit" onclick="return confirm('¿Eliminar este comentario?')">🗑️ Eliminar</button>
+</form>
+<?php endif; ?>
       <?php endforeach; ?>
     <?php else: ?>
       <p>No hay comentarios disponibles para esta película.</p>

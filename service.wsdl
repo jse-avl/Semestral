@@ -9,8 +9,14 @@
   <message name="getMovieRatingsRequest">
     <part name="parameters" type="xsd:anyType"/>
   </message>
-
   <message name="getMovieRatingsResponse">
+    <part name="result" type="xsd:string"/>
+  </message>
+
+  <message name="deleteCommentRequest">
+    <part name="parameters" type="xsd:anyType"/>
+  </message>
+  <message name="deleteCommentResponse">
     <part name="result" type="xsd:string"/>
   </message>
 
@@ -19,14 +25,31 @@
       <input message="tns:getMovieRatingsRequest"/>
       <output message="tns:getMovieRatingsResponse"/>
     </operation>
+    <operation name="deleteComment">
+      <input message="tns:deleteCommentRequest"/>
+      <output message="tns:deleteCommentResponse"/>
+    </operation>
   </portType>
 
   <binding name="MovieServiceBinding" type="tns:MovieServicePortType">
     <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
     <operation name="getMovieRatings">
       <soap:operation soapAction="getMovieRatings"/>
-      <input><soap:body use="encoded" namespace="http://localhost/wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></input>
-      <output><soap:body use="encoded" namespace="http://localhost/wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/></output>
+      <input>
+        <soap:body use="encoded" namespace="http://localhost/wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <soap:body use="encoded" namespace="http://localhost/wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+    <operation name="deleteComment">
+      <soap:operation soapAction="deleteComment"/>
+      <input>
+        <soap:body use="encoded" namespace="http://localhost/wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <soap:body use="encoded" namespace="http://localhost/wsdl" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
     </operation>
   </binding>
 

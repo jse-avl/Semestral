@@ -3,35 +3,41 @@ session_start();
 require 'db.php';
 require 'tmdb.php';
 
-if (!isset($_SESSION['user'])) {
+$username = $_SESSION['user'] ?? null;
+$role = $_SESSION['role'] ?? null;
+$userId = null;
+
+if (!$username || !$role) {
     header('Location: login.php');
     exit;
 }
 
-$serieId = (int) ($_GET['id'] ?? 0);
-if (!$serieId) {
-    die("Película no especificada.");
+// Obtener ID del usuario normal
+if ($role === 'user') {
+    $stmtUser = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+    $stmtUser->execute([$username]);
+    $userId = $stmtUser->fetchColumn();
+
+    if (!$userId) {
+        header('Location: login.php');
+        exit;
+    }
 }
 
-// Obtener ID del usuario
-$stmtUser = $pdo->prepare("SELECT id FROM users WHERE username = ?");
-$stmtUser->execute([$_SESSION['user']]);
-$userId = $stmtUser->fetchColumn();
-
-if (!$userId) {
-    header('Location: login.php');
-    exit;
+$serieId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+if ($serieId <= 0) {
+    die("Serie no especificada.");
 }
 
-// Obtener detalles desde la API TMDB (incluyendo trailers)
-$serieDetails = getSerieById($serieId); // 🆕 asegúrate que append_to_response=videos en tmdb.php
+// Obtener detalles desde la API TMDB
+$serieDetails = getSerieById($serieId);
 
-$title    = $serieDetails['name']        ?? 'Título no disponible';
-$poster   = $serieDetails['poster_path']  ?? '';
+$title    = $serieDetails['name'] ?? 'Título no disponible';
+$poster   = $serieDetails['poster_path'] ?? '';
 $release  = $serieDetails['first_air_date'] ?? 'Desconocido';
-$overview = $serieDetails['overview']     ?? 'Sin sinopsis disponible';
+$overview = $serieDetails['overview'] ?? 'Sin sinopsis disponible';
 
-// 🆕 Obtener el tráiler de YouTube
+// Tráiler de YouTube
 $trailerKey = null;
 if (!empty($serieDetails['videos']['results'])) {
     foreach ($serieDetails['videos']['results'] as $video) {
@@ -42,42 +48,44 @@ if (!empty($serieDetails['videos']['results'])) {
     }
 }
 
-// Verificar si el usuario ya valoró esta película
-$stmtCheck = $pdo->prepare("SELECT rating, comment FROM ratings WHERE movie_id = ? AND user_id = ?");
-$stmtCheck->execute([$serieId , $userId]);
-$myRating = $stmtCheck->fetch();
+// Obtener valoración y favoritos solo si es usuario normal
+$myRating = null;
+$isFavorite = false;
 
-// Verificar si ya es favorita
-$stmtFav = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND movie_id = ?");
-$stmtFav->execute([$userId, $serieId ]);
-$isFavorite = $stmtFav->fetchColumn() > 0;
+if ($role === 'user' && $userId) {
+    $stmtCheck = $pdo->prepare("SELECT rating, comment FROM ratings WHERE movie_id = ? AND user_id = ?");
+    $stmtCheck->execute([$serieId, $userId]);
+    $myRating = $stmtCheck->fetch();
 
-// Procesar nueva valoración
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $rating = (int) $_POST['rating'];
-    $comment = htmlspecialchars(trim($_POST['comment']), ENT_QUOTES, 'UTF-8');
+    $stmtFav = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND movie_id = ?");
+    $stmtFav->execute([$userId, $serieId]);
+    $isFavorite = $stmtFav->fetchColumn() > 0;
+}
+
+// Procesar formulario POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $role === 'user' && $userId) {
+    $rating = (int) ($_POST['rating'] ?? 0);
+    $comment = htmlspecialchars(trim($_POST['comment'] ?? ''), ENT_QUOTES, 'UTF-8');
 
     if ($rating >= 1 && $rating <= 5) {
         if ($myRating) {
             $stmt = $pdo->prepare("UPDATE ratings SET rating = ?, comment = ? WHERE movie_id = ? AND user_id = ?");
-            $stmt->execute([$rating, $comment,$serieId , $userId]);
+            $stmt->execute([$rating, $comment, $serieId, $userId]);
         } else {
             $stmt = $pdo->prepare("INSERT INTO ratings (movie_id, user_id, rating, comment) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$serieId , $userId, $rating, $comment]);
+            $stmt->execute([$serieId, $userId, $rating, $comment]);
         }
 
         include 'update_genre_cookie.php';
-        header("Location: rateSerie.php?id=$Id");
+        header("Location: rateSerie.php?id=$serieId");
         exit;
     }
 }
 
-// Obtener comentarios de otros usuarios usando SOAP
+// Obtener comentarios vía SOAP
 try {
-    $soapClient = new SoapClient("http://localhost/Semestral/service.wsdl", [
-        'cache_wsdl' => WSDL_CACHE_NONE
-    ]);
-    $response = $soapClient->__soapCall("getMovieRatings", [["serieId" => $serieId]]);
+    $soapClient = new SoapClient("http://localhost/Semestral/service.wsdl", ['cache_wsdl' => WSDL_CACHE_NONE]);
+    $response = $soapClient->__soapCall("getMovieRatings", [["movieId" => $serieId]]);
     $comentarios = json_decode($response, true);
 } catch (SoapFault $e) {
     $comentarios = [];
@@ -101,13 +109,15 @@ try {
       <div class="movie-text">
         <p><strong>Fecha de estreno:</strong> <?= $release ?></p>
         <p><strong>Sinopsis:</strong> <?= htmlspecialchars($overview) ?></p>
-        <button id="favoriteBtn" class="fav-btn" onclick="toggleFavorite(<?= $movieId ?>)">
-          <?= $isFavorite ? '💔 Quitar de Favoritos' : '❤️ Agregar a Favoritos' ?>
-        </button>
+        <?php if ($role === 'user' && $userId): ?>
+  <button id="favoriteBtn" class="fav-btn" onclick="toggleFavorite(<?= $serieId ?>)">
+    <?= $isFavorite ? '💔 Quitar de Favoritos' : '❤️ Agregar a Favoritos' ?>
+  </button>
+<?php endif; ?>
       </div>
     </div>
 
-    <?php if ($trailerKey): ?> <!-- 🆕 Tráiler -->
+    <?php if ($trailerKey): ?>
       <div class="trailer-container">
         <iframe width="560" height="315"
           src="https://www.youtube.com/embed/<?= htmlspecialchars($trailerKey) ?>"
@@ -117,12 +127,14 @@ try {
       </div>
     <?php endif; ?>
 
-    <?php if ($myRating): ?>
-      <p><strong>Tu valoración:</strong> ⭐ <?= $myRating['rating'] ?>/5</p>
-      <p><strong>Tu comentario:</strong> <?= $myRating['comment'] ?: 'Sin comentario' ?></p>
-    <?php endif; ?>
+    <?php if ($role === 'user' && $myRating): ?>
+  <p><strong>Tu valoración:</strong> ⭐ <?= $myRating['rating'] ?>/5</p>
+  <p><strong>Tu comentario:</strong> <?= $myRating['comment'] ?: 'Sin comentario' ?></p>
+<?php endif; ?>
   </div>
 
+  <?php if ($role === 'user'): ?>
+  <!-- formulario de calificación -->
   <form method="POST" class="rating-form">
     <h3><?= $myRating ? 'Actualizar' : 'Enviar' ?> tu valoración</h3>
 
@@ -135,10 +147,11 @@ try {
     </div>
 
     <label>Comentario (opcional):</label>
-    <textarea name="comment" placeholder="¿Qué opinas de esta película?"><?= htmlspecialchars($myRating['comment'] ?? '') ?></textarea>
+    <textarea name="comment" placeholder="¿Qué opinas de esta serie?"><?= htmlspecialchars($myRating['comment'] ?? '') ?></textarea>
 
     <button type="submit">Guardar Valoración</button>
   </form>
+<?php endif; ?>
 
   <div class="comment-section">
     <h3>🗣️ Opiniones de otros usuarios</h3>
@@ -153,13 +166,22 @@ try {
       <p><strong>Promedio de calificaciones:</strong> ⭐ <?= $promedio ?>/5 basado en <?= count($comentarios) ?> opiniones</p>
 
       <?php foreach ($comentarios as $c): ?>
-        <div class="user-comment">
-          <p><strong><?= htmlspecialchars($c['username']) ?>:</strong> ⭐ <?= $c['rating'] ?>/5</p>
-          <p><?= $c['comment'] ? htmlspecialchars($c['comment']) : 'Sin comentario' ?></p>
-        </div>
-      <?php endforeach; ?>
+  <div class="user-comment">
+    <p><strong><?= htmlspecialchars($c['username']) ?>:</strong> ⭐ <?= $c['rating'] ?>/5</p>
+    <p><?= $c['comment'] ? htmlspecialchars($c['comment']) : 'Sin comentario' ?></p>
+
+    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+      <form method="POST" action="/Semestral/admin/delete_comment_series.php" class="delete-comment-form">
+        <input type="hidden" name="comment_id" value="<?= $c['id'] ?>">
+        <input type="hidden" name="serie_id" value="<?= $serieId ?>">
+        <button type="submit" onclick="return confirm('¿Eliminar este comentario?')">🗑️ Eliminar</button>
+      </form>
+    <?php endif; ?>
+  </div>
+<?php endforeach; ?>
+
     <?php else: ?>
-      <p>No hay comentarios disponibles para esta película.</p>
+      <p>No hay comentarios disponibles para esta serie.</p>
     <?php endif; ?>
   </div>
 
@@ -180,8 +202,8 @@ try {
 
     applyThemeFromCookie();
 
-    function toggleFavorite(movieId) {
-      fetch('toggle_favorite.php?id=' + movieId)
+    function toggleFavorite(serieId) {
+      fetch('toggle_favorite.php?id=' + serieId)
         .then(res => res.json())
         .then(data => {
           const btn = document.getElementById('favoriteBtn');

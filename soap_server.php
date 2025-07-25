@@ -15,11 +15,12 @@ class MovieService {
         
         try {
             $stmt = $pdo->prepare("
-                SELECT u.username, r.rating, r.comment
-                FROM ratings r
-                JOIN users u ON r.user_id = u.id
-                WHERE r.movie_id = ?
-            ");
+    SELECT r.id, u.username, r.rating, r.comment
+    FROM ratings r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.movie_id = ?
+    ORDER BY r.id DESC
+");
             $stmt->execute([$movieId]);
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
@@ -31,6 +32,21 @@ class MovieService {
             return json_encode(['error' => $e->getMessage()]);
         }
     }
+    public function deleteComment($params) {
+    global $pdo;
+
+    $commentId = isset($params['commentId']) ? (int)$params['commentId'] : 0;
+    error_log("SOAP Delete Request - CommentID: $commentId");
+
+    try {
+        $stmt = $pdo->prepare("DELETE FROM ratings WHERE id = ?");
+        $stmt->execute([$commentId]);
+        return json_encode(['status' => 'success', 'message' => 'Comentario eliminado']);
+    } catch (PDOException $e) {
+        error_log("SOAP Delete Error: " . $e->getMessage());
+        return json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+}
 }
 
 // Verificar si es una solicitud SOAP
