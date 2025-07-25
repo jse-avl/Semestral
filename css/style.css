@@ -309,6 +309,11 @@ body.dark .flip-card__btn {
   margin-top: 10px;
   color: white;
 }
+h3{
+  text-align: center;
+  margin: 20px;
+  font-size: 30PX;
+}
 
 /* GRILLA DE PELÍCULAS */
 .movie-grid {

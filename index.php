@@ -25,8 +25,9 @@ if (isset($_SESSION['genre']) && ctype_digit(strval($_SESSION['genre']))) {
 
 // Obtener películas seguras
 $recomendadas = fetchPopularMovies($genreId, 1);
-$otras = fetchPopularMovies(null, 1);
-
+$recomendadasSe = fetchPopularSeries($genreId, 1);
+$peliculas = fetchPopularMovies(null, 1);
+$series = fetchPopularSeries(null, 1);
 // Obtener datos del usuario si está logueado
 $userId = null;
 $valoraciones = [];
@@ -97,9 +98,9 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
   <div class="swiper-pagination"></div>
 </div>
 
-<h3>🎬 También podrías ver</h3>
+<h3>🎬Peliculas</h3>
 <div class="movie-grid">
-  <?php foreach ($otras as $movie): ?>
+  <?php foreach ($peliculas as $movie): ?>
     <div class="movie-card">
       <a href="rate.php?id=<?= $movie['id'] ?>">
         <img src="https://image.tmdb.org/t/p/w200<?= $movie['poster_path'] ?>" alt="<?= htmlspecialchars($movie['title']) ?>">
@@ -108,6 +109,56 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
           <div class="star-rating">
             <?php
               $rating = $valoraciones[$movie['id']];
+              for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
+            ?>
+          </div>
+        <?php endif; ?>
+      </a>
+      <?php if ($userId): ?>
+      <form class="fav-form" method="post" action="toggle_favorite.php">
+        <input type="hidden" name="movie_id" value="<?= $movie['id'] ?>">
+        <button class="fav-btn" title="Favorito">
+          <?= in_array($movie['id'], $favoritos) ? '❤️' : '🤍' ?>
+        </button>
+      </form>
+      <?php endif; ?>
+    </div>
+  <?php endforeach; ?>
+</div>
+
+<div class="swiper">
+  <h2>🎯 Recomendadas: <?= $nombreGenero ?></h2>
+  <div class="swiper-wrapper">
+    <?php foreach ($recomendadasSe as $serie): ?>
+      <div class="swiper-slide">
+      <a href="rateSerie.php?id=<?= $serie['id'] ?>">
+      <img src="https://image.tmdb.org/t/p/w300<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
+      <p><?= htmlspecialchars($serie['name']) ?></p>
+        <?php if (isset($valoraciones[$serie['id']])): ?>
+            <div class="star-rating">
+              <?php
+                $rating = $valoraciones[$serie['id']];
+                for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
+              ?>
+            </div>
+          <?php endif; ?>
+        </a>
+      </div>
+    <?php endforeach; ?>
+  </div>
+  <div class="swiper-pagination"></div>
+</div>
+<h3>🎬Series</h3>
+<div class="movie-grid">
+ <?php foreach ($series as $serie): ?>
+  <div class="movie-card">
+    <a href="rateSerie.php?id=<?= $serie['id'] ?>&type=tv">
+      <img src="https://image.tmdb.org/t/p/w200<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
+      <p><?= htmlspecialchars($serie['name']) ?></p>
+        <?php if (isset($valoraciones[$serie['id']])): ?>
+          <div class="star-rating">
+            <?php
+              $rating = $valoraciones[$serie['id']];
               for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
             ?>
           </div>
