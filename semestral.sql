@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 25-07-2025 a las 04:27:19
+-- Tiempo de generación: 26-07-2025 a las 00:01:41
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -33,15 +33,28 @@ CREATE TABLE `admins` (
   `password` varchar(255) NOT NULL,
   `email` varchar(100) DEFAULT NULL,
   `status` enum('active','banned') DEFAULT 'active',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `role` varchar(50) DEFAULT 'admin'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `admins`
 --
 
-INSERT INTO `admins` (`id`, `username`, `password`, `email`, `status`, `created_at`) VALUES
-(1, 'admin1', '$2y$10$mhjkKw6hIlmcuiFeFoAor.lOT649PcmBpSZTsJTKDdc167OV8cB9i', 'admin1@RateMyMovie.com', 'active', '2025-07-25 00:52:49');
+INSERT INTO `admins` (`id`, `username`, `password`, `email`, `status`, `created_at`, `role`) VALUES
+(1, 'admin1', '$2y$10$mhjkKw6hIlmcuiFeFoAor.lOT649PcmBpSZTsJTKDdc167OV8cB9i', 'admin1@RateMyMovie.com', 'active', '2025-07-25 00:52:49', 'admin');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `blocked_movies`
+--
+
+CREATE TABLE `blocked_movies` (
+  `id` int(11) NOT NULL,
+  `movie_id` int(11) NOT NULL,
+  `blocked_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -91,16 +104,6 @@ CREATE TABLE `ratings` (
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Volcado de datos para la tabla `ratings`
---
-
-INSERT INTO `ratings` (`id`, `movie_id`, `user_id`, `rating`, `comment`, `created_at`) VALUES
-(1, 1278950, 1, 5, 'Hola', '2025-07-11 10:27:12'),
-(2, 749170, 1, 4, '', '2025-07-11 10:35:37'),
-(3, 1087192, 2, 4, 'muy buena pelicula', '2025-07-17 19:09:48'),
-(4, 7451, 2, 2, '', '2025-07-17 19:32:13');
-
 -- --------------------------------------------------------
 
 --
@@ -114,16 +117,17 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `favorite_genre` int(11) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
-  `role` varchar(20) NOT NULL DEFAULT 'user'
+  `role` varchar(20) NOT NULL DEFAULT 'user',
+  `status` varchar(20) DEFAULT 'active'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `favorite_genre`, `created_at`, `role`) VALUES
-(1, 'Jose', 'avilajoser8@gmail.com', '$2y$10$Udikso7eqzHJBCdsqKspAeRUoyXvxE2q.o79u0NyhQu2OcOKHJdxO', 27, '2025-07-11 10:02:29', 'user'),
-(2, 'Eliasaf', 'ehudsonaguirre@gmail.com', '$2y$10$mNzy/DuTXzfvepc8naYv2OC48uKANfcpaBszFX/mJXtONohwW7Us6', 28, '2025-07-17 15:51:41', 'user');
+INSERT INTO `users` (`id`, `username`, `email`, `password`, `favorite_genre`, `created_at`, `role`, `status`) VALUES
+(2, 'Eliasaf', 'ehudsonaguirre@gmail.com', '$2y$10$mNzy/DuTXzfvepc8naYv2OC48uKANfcpaBszFX/mJXtONohwW7Us6', 28, '2025-07-17 15:51:41', 'user', 'active'),
+(3, 'Jose', 'avilajoser8@gmail.com', '$2y$10$8LslK3LLv1i45Z7V4EHYp.9eeN/zPg/63E/2bl/plkMs6t/n14LXG', 18, '2025-07-24 22:16:01', 'user', 'active');
 
 --
 -- Índices para tablas volcadas
@@ -135,6 +139,12 @@ INSERT INTO `users` (`id`, `username`, `email`, `password`, `favorite_genre`, `c
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`);
+
+--
+-- Indices de la tabla `blocked_movies`
+--
+ALTER TABLE `blocked_movies`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indices de la tabla `favorites`
@@ -176,16 +186,22 @@ ALTER TABLE `admins`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT de la tabla `blocked_movies`
+--
+ALTER TABLE `blocked_movies`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `ratings`
 --
 ALTER TABLE `ratings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Restricciones para tablas volcadas
