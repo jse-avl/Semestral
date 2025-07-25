@@ -3,7 +3,7 @@ session_start();
 require 'db.php';
 require 'tmdb.php';
 
-if (!isset($_SESSION['user'])) {
+if (!isset($_SESSION['user']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')) {
     header('Location: login.php');
     exit;
 }

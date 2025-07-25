@@ -5,6 +5,7 @@ require 'db.php';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
+    // LOGIN
     if ($action === 'login') {
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';
@@ -20,38 +21,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
 
-            $_SESSION['admin'] = true;
             $_SESSION['user'] = $admin['username'];
             $_SESSION['user_id'] = $admin['id'];
-            header("Location: admin/admin_panel.php");
+            $_SESSION['role'] = 'admin';
+            header("Location: admin/dashboard.php");
             exit;
         }
 
-        // Si no es admin, buscar en usuarios normales
+        // Buscar en la tabla de usuarios normales
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['admin'] = false;
             $_SESSION['user'] = $user['username'];
             $_SESSION['user_id'] = $user['id'];
+            $_SESSION['role'] = 'user';
             header("Location: index.php");
             exit;
         }
 
+        // Credenciales incorrectas
         header("Location: login.php?error=invalid_login");
         exit;
     }
 
+    // 📝 REGISTRO DE USUARIO
     if ($action === 'register') {
-        // Registro para usuarios normales (no admins)
         $username = $_POST['username'] ?? '';
         $email = $_POST['email'] ?? '';
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
         $genre = $_POST['genre'] ?? '28';
 
-        // Verifica duplicados
+        // Verificar duplicados
         $check = $pdo->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
         $check->execute([$email, $username]);
 
@@ -60,6 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        // Insertar en la tabla de usuarios
         $stmt = $pdo->prepare("INSERT INTO users (username, email, password, favorite_genre) VALUES (?, ?, ?, ?)");
         $stmt->execute([$username, $email, $password, $genre]);
 
