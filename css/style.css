@@ -127,7 +127,7 @@ h2, h3 {
 /* NAVBAR */
 nav.navbar {
   padding: 0 40px;
-  height: 80px;
+  height: 90px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -141,7 +141,8 @@ nav.navbar {
   list-style: none;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 30px;
+  margin-right: 10px;
 }
 
 .ul li {
@@ -165,14 +166,72 @@ body.dark .ul li:hover,
 
 .ul a, #cat > a {
   text-decoration: none;
-  font-weight: 500;
-  font-size: 1.08em;
-  padding: 8px 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 8px 8px;
+  width:130px;
+  margin: 5px;
   border-radius: 6px;
   transition: background 0.3s ease;
   display: inline-block;
 }
+nav i {
+ font-size: 12px;
+ margin-right: 5px;
+}
 
+.nav-search-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.flip-card__input {
+  width: 240px;
+  height: 40px;
+  border-radius: 5px;
+  outline: none;
+  padding: 0.7em;
+  transition: .4s ease-in-out;
+}
+body.light .flip-card__input {
+  border: 1px solid var(--light-navbar);
+  background-color: whitesmoke;
+}
+body.dark .flip-card__input {
+  border: 1px solid rgb(119, 118, 118);
+  background-color: var(--dark-input);
+  color: white;
+}
+body.light .flip-card__input:focus {
+  border: 2px solid var( --light-navbar);
+}
+body.dark .flip-card__input:focus {
+  border: 2px solid rgb(119, 118, 118);
+}
+.flip-card__btn {
+  align-self: center;
+  padding: 0.7em;
+  border-radius: 10px;
+  border: none;
+  transition: .4s ease-in-out;
+  cursor: pointer;
+}
+body.light .flip-card__btn {
+  background: var(--light-navbar);
+  color: white;
+  box-shadow: rgba(0, 0, 0, 0.288) 0px 4px 12px;
+}
+body.dark .flip-card__btn {
+  background: var(--dark-input);
+  color: white;
+  box-shadow: rgba(255, 255, 255, 0.137) 0px 4px 12px;
+}
+.flip-card__btn:active {
+  transition: .2s;
+  transform: translateX(0em) translateY(0.5em);
+  box-shadow: none;
+}
 .dropdown-menu {
   display: none;
   position: absolute;
@@ -193,6 +252,7 @@ body.dark .ul li:hover,
 .dropdown-menu a {
   display: block;
   padding: 10px 20px;
+  width: 100%;
   font-size: 0.95em;
   border-radius: 4px;
   transition: background 0.2s;
@@ -238,8 +298,11 @@ body.dark .ul li:hover,
   max-width: 250px;
   border-radius: 6px;
   box-shadow: 5px 5px 15px rgba(65, 65, 65, 0.859);
+  transition: max-width 0.3s ease;
 }
-
+.swiper-slide img:hover {
+  max-width: 255px;
+}
 .swiper-slide a {
   text-align: center;
   display: block;
@@ -404,7 +467,7 @@ body.dark .rating-form {
   margin: 30px auto;
 }
 
-.user-comment {
+.user-comment{
   padding: 12px;
   margin-bottom: 10px;
   border-radius: 6px;
@@ -557,18 +620,10 @@ a {
   transform: translateX(30px);
   content: '🌙';
 }
-.logo a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.3em;
-  font-weight: bold;
-  text-decoration: none;
-  color: inherit;
-}
+
 
 .logo img {
-  width: 350px;
+  width: 240px;
   height:155px;
   object-fit: contain;
   border-radius: 6px;
@@ -576,62 +631,11 @@ a {
 
 
 .user-info {
-  margin-left: 1rem;
   font-size: 0.95em;
-  color: white;
-}
-.flip-card__input {
-  width: 250px;
-  height: 40px;
-  border-radius: 5px;
-  outline: none;
-  padding: 0.7em;
-  transition: .4s ease-in-out;
-  margin-left: 20px;
-}
-body.light .flip-card__input {
-  border: 1px solid var(--light-navbar);
-  background-color: whitesmoke;
-}
-body.dark .flip-card__input {
-  border: 1px solid rgb(119, 118, 118);
-  background-color: var(--dark-input);
-  color: white;
-}
-body.light .flip-card__input:focus {
-  border: 2px solid var( --light-navbar);
-}
-body.dark .flip-card__input:focus {
-  border: 2px solid rgb(119, 118, 118);
-}
-.flip-card__btn {
-  margin-top: 2em;
-  align-self: center;
-  padding: 0.7em 1em;
 
-  border-radius: 10px;
-  border: none;
-  transition: .4s ease-in-out;
-  cursor: pointer;
-}
-body.light .flip-card__btn {
-  background: var(--light-navbar);
   color: white;
-  box-shadow: rgba(0, 0, 0, 0.288) 0px 4px 12px;
 }
-body.dark .flip-card__btn {
-  background: var(--dark-input);
-  color: white;
-  box-shadow: rgba(255, 255, 255, 0.137) 0px 4px 12px;
-}
-.flip-card__btn:active {
-  transition: .2s;
-  transform: translateX(0em) translateY(0.5em);
-  box-shadow: none;
-}
-.buscar-form {
-  margin-bottom: 20px;
-}
+
 .p{
   margin: 20px;
   font-size: 1.1em;
@@ -957,4 +961,14 @@ body.light .social-icons a:hover {
 body.dark .favorite-btn:hover {
   background-color: #333;
   color: #fff;
+}
+.trailer-container {
+  margin: 2em 0;
+  text-align: center;
+}
+
+.trailer-container iframe {
+  max-width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }

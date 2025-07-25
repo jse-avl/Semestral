@@ -72,7 +72,8 @@ function syncMoviesToDB($genreId, $page = 1) {
     return $guardadas;
 }
 function getMovieById($movieId) {
-    $url = "https://api.themoviedb.org/3/movie/$movieId?language=es-ES";
+    // 🆕 Agregamos append_to_response=videos para incluir los trailers
+    $url = "https://api.themoviedb.org/3/movie/$movieId?language=es-ES&append_to_response=videos";
 
     $headers = [
         "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmOTk0NzY5NDA0M2EyNTY3ZmE1ZWUwY2Q4OTA2ZGEwOCIsIm5iZiI6MTc1MTM5ODU3NS42NDMwMDAxLCJzdWIiOiI2ODY0MzhhZjUxZjc3OThkZTRkMTI1MDEiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.vx91c1ypvxjGRzz26P_SNsnqPAOGLEFou3Lo8dGKU58",

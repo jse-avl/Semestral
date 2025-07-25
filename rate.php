@@ -23,12 +23,24 @@ if (!$userId) {
     exit;
 }
 
-// Obtener detalles desde la API TMDB
-$movieDetails = getMovieById($movieId);
+// Obtener detalles desde la API TMDB (incluyendo trailers)
+$movieDetails = getMovieById($movieId); // 🆕 asegúrate que append_to_response=videos en tmdb.php
+
 $title    = $movieDetails['title']        ?? 'Título no disponible';
 $poster   = $movieDetails['poster_path']  ?? '';
 $release  = $movieDetails['release_date'] ?? 'Desconocido';
 $overview = $movieDetails['overview']     ?? 'Sin sinopsis disponible';
+
+// 🆕 Obtener el tráiler de YouTube
+$trailerKey = null;
+if (!empty($movieDetails['videos']['results'])) {
+    foreach ($movieDetails['videos']['results'] as $video) {
+        if ($video['site'] === 'YouTube' && $video['type'] === 'Trailer') {
+            $trailerKey = $video['key'];
+            break;
+        }
+    }
+}
 
 // Verificar si el usuario ya valoró esta película
 $stmtCheck = $pdo->prepare("SELECT rating, comment FROM ratings WHERE movie_id = ? AND user_id = ?");
@@ -94,6 +106,16 @@ try {
         </button>
       </div>
     </div>
+
+    <?php if ($trailerKey): ?> <!-- 🆕 Tráiler -->
+      <div class="trailer-container">
+        <iframe width="560" height="315"
+          src="https://www.youtube.com/embed/<?= htmlspecialchars($trailerKey) ?>"
+          title="Tráiler de <?= htmlspecialchars($title) ?>" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+    <?php endif; ?>
 
     <?php if ($myRating): ?>
       <p><strong>Tu valoración:</strong> ⭐ <?= $myRating['rating'] ?>/5</p>

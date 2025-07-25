@@ -1,0 +1,8 @@
+# Evita acceso directo por URL si no viene de un archivo PHP
+Order Deny,Allow
+Deny from all
+
+<FilesMatch "\.(php)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>

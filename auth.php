@@ -1,78 +1,69 @@
 <?php
-require 'db.php';
 session_start();
-
-function sanitize($value) {
-  return htmlspecialchars(trim($value), ENT_QUOTES, 'UTF-8');
-}
+require 'db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $username = sanitize($_POST['username'] ?? '');
-  $email    = sanitize($_POST['email'] ?? '');
-  $password = $_POST['password'] ?? '';
-  $genre    = isset($_POST['genre']) ? (int) $_POST['genre'] : null;
-  $action   = $_POST['action'] ?? '';
+    $action = $_POST['action'] ?? '';
 
-  $_SESSION['login_attempts'] = $_SESSION['login_attempts'] ?? 0;
+    if ($action === 'login') {
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
 
-  if ($action === 'login') {
-    if ($_SESSION['login_attempts'] >= 5) {
-      header('Location: login.php?error=locked');
-      exit;
+        // Buscar primero en la tabla de admins
+        $stmt = $pdo->prepare("SELECT * FROM admins WHERE email = ?");
+        $stmt->execute([$email]);
+        $admin = $stmt->fetch();
+
+        if ($admin && password_verify($password, $admin['password'])) {
+            if ($admin['status'] !== 'active') {
+                header("Location: login.php?error=locked");
+                exit;
+            }
+
+            $_SESSION['admin'] = true;
+            $_SESSION['user'] = $admin['username'];
+            $_SESSION['user_id'] = $admin['id'];
+            header("Location: admin/admin_panel.php");
+            exit;
+        }
+
+        // Si no es admin, buscar en usuarios normales
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['admin'] = false;
+            $_SESSION['user'] = $user['username'];
+            $_SESSION['user_id'] = $user['id'];
+            header("Location: index.php");
+            exit;
+        }
+
+        header("Location: login.php?error=invalid_login");
+        exit;
     }
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
+    if ($action === 'register') {
+        // Registro para usuarios normales (no admins)
+        $username = $_POST['username'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $genre = $_POST['genre'] ?? '28';
 
-    if ($user && password_verify($password, $user['password'])) {
-      $_SESSION['user']  = $user['username'];
-      $_SESSION['genre'] = $user['favorite_genre'];
-      $_SESSION['role']  = $user['role'] ?? 'user';
+        // Verifica duplicados
+        $check = $pdo->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
+        $check->execute([$email, $username]);
 
-      setcookie('user', $user['username'], time() + 604800, '/', '', false, true);
-      setcookie('genre', $user['favorite_genre'], time() + 604800, '/', '', false, true);
-      setcookie('role', $_SESSION['role'], time() + 604800, '/', '', false, true);
+        if ($check->fetch()) {
+            header("Location: login.php?error=duplicate");
+            exit;
+        }
 
-      $_SESSION['login_attempts'] = 0;
-      header('Location: index.php');
-      exit;
-    } else {
-      $_SESSION['login_attempts'] += 1;
-      header('Location: login.php?error=invalid_login');
-      exit;
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, favorite_genre) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$username, $email, $password, $genre]);
+
+        header("Location: login.php");
+        exit;
     }
-
-  } elseif ($action === 'register') {
-    $stmtCheck = $pdo->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
-    $stmtCheck->execute([$email, $username]);
-
-    if ($stmtCheck->rowCount() > 0) {
-      header('Location: login.php?error=duplicate');
-      exit;
-    }
-
-    $hash = password_hash($password, PASSWORD_DEFAULT);
-    $defaultRole = 'user';
-
-    $stmtInsert = $pdo->prepare("
-      INSERT INTO users (username, email, password, favorite_genre, role)
-      VALUES (?, ?, ?, ?, ?)
-    ");
-    $stmtInsert->execute([$username, $email, $hash, $genre, $defaultRole]);
-
-    $_SESSION['user']  = $username;
-    $_SESSION['genre'] = $genre;
-    $_SESSION['role']  = $defaultRole;
-
-    setcookie('user', $username, time() + 604800, '/', '', false, true);
-    setcookie('genre', $genre, time() + 604800, '/', '', false, true);
-    setcookie('role', $defaultRole, time() + 604800, '/', '', false, true);
-
-    header('Location: index.php');
-    exit;
-  }
-} else {
-  header('Location: login.php');
-  exit;
 }

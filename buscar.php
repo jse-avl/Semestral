@@ -41,12 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['q']) && strlen(trim($_G
 <body>
   <?php include 'includes/navbar.php'; ?>
 
-  <h2>Buscar Películas</h2>
-
-  <form method="GET" class="buscar-form">
-    <input class="flip-card__input" type="text" name="q" placeholder="Ej: Batman, Matrix..." value="<?= $query ?>" maxlength="100" required>
-    <button class="flip-card__btn" type="submit">Buscar</button>
-  </form>
+  <h2>Resultados de la búsqueda</h>
 
   <?php if ($query && empty($results)): ?>
     <p class="p">No se encontraron resultados para <strong><?= $query ?></strong>.</p>
