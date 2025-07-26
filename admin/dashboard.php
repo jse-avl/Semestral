@@ -50,10 +50,49 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
   </div>
 </div>
 
+<!-- Swiper + Temas -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<script>
+  new Swiper('.swiper', {
+    slidesPerView: 3,
+    spaceBetween: 10,
+    loop: true,
+    pagination: { el: '.swiper-pagination' },
+    autoplay: { delay: 3000 }
+  });
+
+  function toggleTheme() {
+    const isDark = document.body.classList.contains('dark');
+    const next = isDark ? 'light' : 'dark';
+    document.body.classList.remove('light', 'dark');
+    document.body.classList.add(next);
+    document.cookie = "theme=" + next + "; path=/; max-age=31536000";
+    document.getElementById('themeToggle').checked = next === 'dark';
+  }
+
+  function applyThemeFromCookie() {
+    const match = document.cookie.match(/theme=(light|dark)/);
+    const theme = match ? match[1] : 'light';
+    document.body.classList.add(theme);
+    if (theme === 'dark') {
+      document.getElementById('themeToggle').checked = true;
+    }
+  }
+  applyThemeFromCookie();
+</script>
+
+<script>
+  function toggleMenu() {
+    const menu = document.querySelector('.ul');
+    menu.classList.toggle('show');
+  }
+</script>
+
+<!-- Footer -->
 <footer class="main-footer">
   <div class="footer-container">
     <div class="footer-logo">
-      <img src="/Semestral/css/logo2.png" alt="Logo" />
+      <img src="../css/logo2.png" alt="Logo" />
       <h3>RateMyMovie</h3>
     </div>
     <div class="footer-social">

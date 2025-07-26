@@ -5,6 +5,19 @@
 
   <ul class="ul">
     <li><a href="/Semestral/index.php"><i class="fa-solid fa-house"></i>Inicio</a></li>
+    
+    <?php if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin'): ?>
+      <li id="cat">
+        <a href="#"><i class="fa-solid fa-layer-group"></i>Categorías ▾</a>
+        <ul class="dropdown-menu">
+          <li><a href="/Semestral/index.php?set_genre=28">Acción</a></li>
+          <li><a href="/Semestral/index.php?set_genre=35">Comedia</a></li>
+          <li><a href="/Semestral/index.php?set_genre=18">Drama</a></li>
+          <li><a href="/Semestral/index.php?set_genre=27">Terror</a></li>
+          <li><a href="/Semestral/index.php?set_genre=10749">Romance</a></li>
+        </ul>
+      </li>
+    <?php endif; ?>
 
     <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
       <li id="cat">
@@ -26,23 +39,11 @@
       <li><a href="/Semestral/login.php">Iniciar sesión</a></li>
     <?php endif; ?>
 
-    <?php if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin'): ?>
-      <li id="cat">
-        <a href="#"><i class="fa-solid fa-layer-group"></i>Categorías ▾</a>
-        <ul class="dropdown-menu">
-          <li><a href="/Semestral/index.php?set_genre=28">Acción</a></li>
-          <li><a href="/Semestral/index.php?set_genre=35">Comedia</a></li>
-          <li><a href="/Semestral/index.php?set_genre=18">Drama</a></li>
-          <li><a href="/Semestral/index.php?set_genre=27">Terror</a></li>
-          <li><a href="/Semestral/index.php?set_genre=10749">Romance</a></li>
-        </ul>
-      </li>
-    <?php endif; ?>
   </ul>
 
   <form method="GET" action="/Semestral/buscar.php" class="nav-search-form">
     <input class="flip-card__input" type="text" name="q" placeholder="Buscar películas..." maxlength="100" required>
-    <button class="flip-card__btn" type="submit">🔍</button>
+    <button class="flip-card__btn" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
   </form>
 
   <div class="logo">

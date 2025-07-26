@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Obtener valoraciones seguras
 $stmt = $pdo->prepare("
-    SELECT r.id AS rating_id, r.rating, r.comment, r.movie_id
+    SELECT r.id AS rating_id, r.rating, r.comment, r.movie_id, r.serie_id
     FROM ratings r
     WHERE r.user_id = ?
 ");
@@ -47,6 +47,7 @@ $ratings = $stmt->fetchAll();
   <meta charset="UTF-8">
   <title>Mis Calificaciones</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
   <?php include 'includes/navbar.php'; ?>
@@ -63,9 +64,15 @@ $ratings = $stmt->fetchAll();
 
   <?php foreach ($ratings as $r): ?>
     <?php
-      $movie = getMovieById($r['movie_id']);
-      $title = $movie['title'] ?? 'Título no disponible';
-      $poster = $movie['poster_path'] ?? '';
+    if ($r['movie_id']) {
+        $movie = getMovieById($r['movie_id']);
+        $title = $movie['title'] ?? 'Título no disponible';
+        $poster = $movie['poster_path'] ?? '';
+    } else {
+        $serie = getSerieById($r['serie_id']);
+        $title = $serie['name'] ?? 'Título no disponible';
+        $poster = $serie['poster_path'] ?? '';
+    }
     ?>
     <form method="POST" class="rating-form">
       <div class="movie-card3">

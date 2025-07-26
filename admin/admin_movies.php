@@ -34,6 +34,7 @@ $blocked = $pdo->query("SELECT movie_id FROM blocked_movies")->fetchAll(PDO::FET
     <meta charset="UTF-8">
     <title>Gestión de Películas (API)</title>
     <link rel="stylesheet" href="../css/style.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         .container { max-width: 1200px; margin: 40px auto; padding: 20px; background: #fff; box-shadow: 0 0 10px #ccc; }
         table { width: 100%; border-collapse: collapse; }
@@ -78,5 +79,61 @@ $blocked = $pdo->query("SELECT movie_id FROM blocked_movies")->fetchAll(PDO::FET
             <?php endforeach ?>
         </table>
     </div>
+    
+<!-- Swiper + Temas -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<script>
+  new Swiper('.swiper', {
+    slidesPerView: 3,
+    spaceBetween: 10,
+    loop: true,
+    pagination: { el: '.swiper-pagination' },
+    autoplay: { delay: 3000 }
+  });
+
+  function toggleTheme() {
+    const isDark = document.body.classList.contains('dark');
+    const next = isDark ? 'light' : 'dark';
+    document.body.classList.remove('light', 'dark');
+    document.body.classList.add(next);
+    document.cookie = "theme=" + next + "; path=/; max-age=31536000";
+    document.getElementById('themeToggle').checked = next === 'dark';
+  }
+
+  function applyThemeFromCookie() {
+    const match = document.cookie.match(/theme=(light|dark)/);
+    const theme = match ? match[1] : 'light';
+    document.body.classList.add(theme);
+    if (theme === 'dark') {
+      document.getElementById('themeToggle').checked = true;
+    }
+  }
+  applyThemeFromCookie();
+</script>
+
+<script>
+  function toggleMenu() {
+    const menu = document.querySelector('.ul');
+    menu.classList.toggle('show');
+  }
+</script>
+
+<!-- Footer -->
+<footer class="main-footer">
+  <div class="footer-container">
+    <div class="footer-logo">
+      <img src="../css/logo2.png" alt="Logo" />
+      <h3>RateMyMovie</h3>
+    </div>
+    <div class="footer-social">
+      <p>© <?= date('Y') ?> RateMyMovie. Todos los derechos reservados.</p>
+      <div class="social-icons">
+        <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+        <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

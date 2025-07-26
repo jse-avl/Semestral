@@ -936,16 +936,19 @@ body.light .social-icons a:hover {
     margin-top: 10px;
   }
 }
-.fav-btn {
-  background: none;
-  border: none;
-  font-size: 1.3em;
+.favorite-btn .fa-heart {
+  color: gray;
+  transition: color 0.3s ease;
   cursor: pointer;
-  color: #e50914;
-  transition: transform 0.2s;
+  border: none;
+  background: none;
 }
 
-.fav-btn:hover {
+.favorite-btn.favorited .fa-heart {
+  color: red;
+}
+
+.favorite-btn:hover {
   transform: scale(1.2);
 }
 .favorite-btn {

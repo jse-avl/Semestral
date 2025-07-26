@@ -53,11 +53,11 @@ $myRating = null;
 $isFavorite = false;
 
 if ($role === 'user' && $userId) {
-    $stmtCheck = $pdo->prepare("SELECT rating, comment FROM ratings WHERE movie_id = ? AND user_id = ?");
+    $stmtCheck = $pdo->prepare("SELECT rating, comment FROM ratings WHERE serie_id = ? AND user_id = ?");
     $stmtCheck->execute([$serieId, $userId]);
     $myRating = $stmtCheck->fetch();
 
-    $stmtFav = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND movie_id = ?");
+    $stmtFav = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND serie_id = ?");
     $stmtFav->execute([$userId, $serieId]);
     $isFavorite = $stmtFav->fetchColumn() > 0;
 }
@@ -69,10 +69,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $role === 'user' && $userId) {
 
     if ($rating >= 1 && $rating <= 5) {
         if ($myRating) {
-            $stmt = $pdo->prepare("UPDATE ratings SET rating = ?, comment = ? WHERE movie_id = ? AND user_id = ?");
+            $stmt = $pdo->prepare("UPDATE ratings SET rating = ?, comment = ? WHERE serie_id = ? AND user_id = ?");
             $stmt->execute([$rating, $comment, $serieId, $userId]);
         } else {
-            $stmt = $pdo->prepare("INSERT INTO ratings (movie_id, user_id, rating, comment) VALUES (?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO ratings (serie_id, user_id, rating, comment) VALUES (?, ?, ?, ?)");
             $stmt->execute([$serieId, $userId, $rating, $comment]);
         }
 
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $role === 'user' && $userId) {
 // Obtener comentarios vía SOAP
 try {
     $soapClient = new SoapClient("http://localhost/Semestral/service.wsdl", ['cache_wsdl' => WSDL_CACHE_NONE]);
-    $response = $soapClient->__soapCall("getMovieRatings", [["movieId" => $serieId]]);
+    $response = $soapClient->__soapCall("getMovieRatings", [["serieId" => $serieId]]);
     $comentarios = json_decode($response, true);
 } catch (SoapFault $e) {
     $comentarios = [];
@@ -98,6 +98,7 @@ try {
   <meta charset="UTF-8">
   <title><?= htmlspecialchars($title) ?></title>
   <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
   <?php include 'includes/navbar.php'; ?>

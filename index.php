@@ -3,7 +3,6 @@ session_start();
 require 'tmdb.php';
 require 'db.php';
 
-// Validar y aplicar género si llega como parámetro
 if (isset($_GET['set_genre']) && ctype_digit($_GET['set_genre'])) {
   $genreId = (int) $_GET['set_genre'];
   $allowedGenres = [28, 35, 18, 27, 10749];
@@ -15,7 +14,6 @@ if (isset($_GET['set_genre']) && ctype_digit($_GET['set_genre'])) {
   exit;
 }
 
-// Detectar género favorito de sesión, cookie o default
 $genreId = 28;
 if (isset($_SESSION['genre']) && ctype_digit(strval($_SESSION['genre']))) {
   $genreId = (int) $_SESSION['genre'];
@@ -23,15 +21,14 @@ if (isset($_SESSION['genre']) && ctype_digit(strval($_SESSION['genre']))) {
   $genreId = (int) $_COOKIE['genre'];
 }
 
-// Obtener películas seguras
 $recomendadas = fetchPopularMovies($genreId, 1);
 $recomendadasSe = fetchPopularSeries($genreId, 1);
 $peliculas = fetchPopularMovies(null, 1);
 $series = fetchPopularSeries(null, 1);
-// Obtener datos del usuario si está logueado
+
 $userId = null;
 $valoraciones = [];
-$favoritos = [];
+$favoritos = ['movie' => [], 'serie' => []];
 
 if (isset($_SESSION['user'])) {
   $stmtUser = $pdo->prepare("SELECT id FROM users WHERE username = ?");
@@ -39,19 +36,25 @@ if (isset($_SESSION['user'])) {
   $userId = $stmtUser->fetchColumn();
 
   if ($userId) {
-    $stmtRatings = $pdo->prepare("SELECT movie_id, rating FROM ratings WHERE user_id = ?");
+    $stmtRatings = $pdo->prepare("SELECT movie_id, serie_id, rating FROM ratings WHERE user_id = ?");
     $stmtRatings->execute([$userId]);
     foreach ($stmtRatings->fetchAll() as $r) {
-      $valoraciones[$r['movie_id']] = (int)$r['rating'];
+      if ($r['movie_id']) {
+        $valoraciones['movie_' . $r['movie_id']] = (int)$r['rating'];
+      } elseif ($r['serie_id']) {
+        $valoraciones['serie_' . $r['serie_id']] = (int)$r['rating'];
+      }
     }
 
-    $stmtFavs = $pdo->prepare("SELECT movie_id FROM favorites WHERE user_id = ?");
+    $stmtFavs = $pdo->prepare("SELECT movie_id, serie_id FROM favorites WHERE user_id = ?");
     $stmtFavs->execute([$userId]);
-    $favoritos = array_column($stmtFavs->fetchAll(), 'movie_id');
+    foreach ($stmtFavs->fetchAll() as $fav) {
+      if ($fav['movie_id']) $favoritos['movie'][] = $fav['movie_id'];
+      if ($fav['serie_id']) $favoritos['serie'][] = $fav['serie_id'];
+    }
   }
 }
 
-//  Diccionario de géneros
 $genres = [
   28 => 'Acción',
   35 => 'Comedia',
@@ -60,13 +63,11 @@ $genres = [
   10749 => 'Romance'
 ];
 $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-8');
-?>
-
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Películas Recomendadas</title>
+  <title>Películas y Series Recomendadas</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -83,11 +84,11 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
         <a href="rate.php?id=<?= $movie['id'] ?>">
           <img src="https://image.tmdb.org/t/p/w300<?= $movie['poster_path'] ?>" alt="<?= htmlspecialchars($movie['title']) ?>">
           <p><?= htmlspecialchars($movie['title']) ?></p>
-          <?php if (isset($valoraciones[$movie['id']])): ?>
+          <?php if (isset($valoraciones['movie_' . $movie['id']])): ?>
             <div class="star-rating">
               <?php
-                $rating = $valoraciones[$movie['id']];
-                for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
+              $rating = $valoraciones['movie_' . $movie['id']];
+              for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
               ?>
             </div>
           <?php endif; ?>
@@ -98,47 +99,44 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
   <div class="swiper-pagination"></div>
 </div>
 
-<h3>🎬Peliculas</h3>
+<h3>🎬 Películas</h3>
 <div class="movie-grid">
   <?php foreach ($peliculas as $movie): ?>
     <div class="movie-card">
       <a href="rate.php?id=<?= $movie['id'] ?>">
         <img src="https://image.tmdb.org/t/p/w200<?= $movie['poster_path'] ?>" alt="<?= htmlspecialchars($movie['title']) ?>">
         <p><?= htmlspecialchars($movie['title']) ?></p>
-        <?php if (isset($valoraciones[$movie['id']])): ?>
+        <?php if (isset($valoraciones['movie_' . $movie['id']])): ?>
           <div class="star-rating">
             <?php
-              $rating = $valoraciones[$movie['id']];
-              for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
+            $rating = $valoraciones['movie_' . $movie['id']];
+            for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
             ?>
           </div>
         <?php endif; ?>
       </a>
       <?php if ($userId): ?>
-      <form class="fav-form" method="post" action="toggle_favorite.php">
-        <input type="hidden" name="movie_id" value="<?= $movie['id'] ?>">
-        <button class="fav-btn" title="Favorito">
-          <?= in_array($movie['id'], $favoritos) ? '❤️' : '🤍' ?>
+        <button class="favorite-btn <?= in_array($movie['id'], $favoritos['movie']) ? 'favorited' : '' ?>" data-movie-id="<?= $movie['id'] ?>">
+          <i class="fa fa-heart"></i>
         </button>
-      </form>
       <?php endif; ?>
     </div>
   <?php endforeach; ?>
 </div>
 
 <div class="swiper">
-  <h2>🎯 Recomendadas: <?= $nombreGenero ?></h2>
+  <h2>🎯 Series Recomendadas: <?= $nombreGenero ?></h2>
   <div class="swiper-wrapper">
     <?php foreach ($recomendadasSe as $serie): ?>
       <div class="swiper-slide">
-      <a href="rateSerie.php?id=<?= $serie['id'] ?>">
-      <img src="https://image.tmdb.org/t/p/w300<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
-      <p><?= htmlspecialchars($serie['name']) ?></p>
-        <?php if (isset($valoraciones[$serie['id']])): ?>
+        <a href="rateSerie.php?id=<?= $serie['id'] ?>">
+          <img src="https://image.tmdb.org/t/p/w300<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
+          <p><?= htmlspecialchars($serie['name']) ?></p>
+          <?php if (isset($valoraciones['serie_' . $serie['id']])): ?>
             <div class="star-rating">
               <?php
-                $rating = $valoraciones[$serie['id']];
-                for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
+              $rating = $valoraciones['serie_' . $serie['id']];
+              for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
               ?>
             </div>
           <?php endif; ?>
@@ -148,34 +146,60 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
   </div>
   <div class="swiper-pagination"></div>
 </div>
-<h3>🎬Series</h3>
+
+<h3>📺 Series</h3>
 <div class="movie-grid">
- <?php foreach ($series as $serie): ?>
-  <div class="movie-card">
-    <a href="rateSerie.php?id=<?= $serie['id'] ?>&type=tv">
-      <img src="https://image.tmdb.org/t/p/w200<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
-      <p><?= htmlspecialchars($serie['name']) ?></p>
-        <?php if (isset($valoraciones[$serie['id']])): ?>
+  <?php foreach ($series as $serie): ?>
+    <div class="movie-card">
+      <a href="rateSerie.php?id=<?= $serie['id'] ?>">
+        <img src="https://image.tmdb.org/t/p/w200<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
+        <p><?= htmlspecialchars($serie['name']) ?></p>
+        <?php if (isset($valoraciones['serie_' . $serie['id']])): ?>
           <div class="star-rating">
             <?php
-              $rating = $valoraciones[$serie['id']];
-              for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
+            $rating = $valoraciones['serie_' . $serie['id']];
+            for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
             ?>
           </div>
         <?php endif; ?>
       </a>
       <?php if ($userId): ?>
-      <form class="fav-form" method="post" action="toggle_favorite.php">
-        <input type="hidden" name="movie_id" value="<?= $movie['id'] ?>">
-        <button class="fav-btn" title="Favorito">
-          <?= in_array($movie['id'], $favoritos) ? '❤️' : '🤍' ?>
+        <button class="favorite-btn <?= in_array($serie['id'], $favoritos['serie']) ? 'favorited' : '' ?>" data-serie-id="<?= $serie['id'] ?>">
+          <i class="fa fa-heart"></i>
         </button>
-      </form>
       <?php endif; ?>
     </div>
   <?php endforeach; ?>
 </div>
 
+<script>
+document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const formData = new FormData();
+        const movieId = this.dataset.movieId;
+        const serieId = this.dataset.serieId;
+
+        if (movieId) formData.append('movie_id', movieId);
+        if (serieId) formData.append('serie_id', serieId);
+
+        fetch('toggle_favorite.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'added') {
+                this.classList.add('favorited');
+            } else if (data.status === 'removed') {
+                this.classList.remove('favorited');
+            }
+        })
+        .catch(err => console.error('Error:', err));
+    });
+});
+</script>
+
+<!-- Swiper + Temas -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 <script>
   new Swiper('.swiper', {
@@ -185,15 +209,14 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
     pagination: { el: '.swiper-pagination' },
     autoplay: { delay: 3000 }
   });
-</script>
-<script>
+
   function toggleTheme() {
     const isDark = document.body.classList.contains('dark');
-    const nextTheme = isDark ? 'light' : 'dark';
+    const next = isDark ? 'light' : 'dark';
     document.body.classList.remove('light', 'dark');
-    document.body.classList.add(nextTheme);
-    document.cookie = "theme=" + nextTheme + "; path=/; max-age=31536000";
-    document.getElementById('themeToggle').checked = nextTheme === 'dark';
+    document.body.classList.add(next);
+    document.cookie = "theme=" + next + "; path=/; max-age=31536000";
+    document.getElementById('themeToggle').checked = next === 'dark';
   }
 
   function applyThemeFromCookie() {
@@ -206,12 +229,15 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
   }
   applyThemeFromCookie();
 </script>
+
 <script>
   function toggleMenu() {
     const menu = document.querySelector('.ul');
     menu.classList.toggle('show');
   }
 </script>
+
+<!-- Footer -->
 <footer class="main-footer">
   <div class="footer-container">
     <div class="footer-logo">
@@ -228,5 +254,3 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
     </div>
   </div>
 </footer>
-</body>
-</html>

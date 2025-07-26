@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 26-07-2025 a las 00:01:41
+-- Tiempo de generación: 27-07-2025 a las 01:47:31
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -64,15 +64,22 @@ CREATE TABLE `blocked_movies` (
 
 CREATE TABLE `favorites` (
   `user_id` int(11) NOT NULL,
-  `movie_id` int(11) NOT NULL
+  `movie_id` int(11) NOT NULL,
+  `serie_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `favorites`
 --
 
-INSERT INTO `favorites` (`user_id`, `movie_id`) VALUES
-(2, 1087192);
+INSERT INTO `favorites` (`user_id`, `movie_id`, `serie_id`) VALUES
+(2, 0, 65733),
+(2, 0, 93405),
+(2, 0, 244808),
+(2, 0, 279060),
+(2, 1058537, 0),
+(2, 1087192, 0),
+(2, 1311031, 0);
 
 -- --------------------------------------------------------
 
@@ -98,11 +105,20 @@ CREATE TABLE `movies` (
 CREATE TABLE `ratings` (
   `id` int(11) NOT NULL,
   `movie_id` int(11) NOT NULL,
+  `serie_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `rating` tinyint(4) NOT NULL CHECK (`rating` between 1 and 5),
   `comment` text DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Volcado de datos para la tabla `ratings`
+--
+
+INSERT INTO `ratings` (`id`, `movie_id`, `serie_id`, `user_id`, `rating`, `comment`, `created_at`) VALUES
+(12, 1087192, 0, 2, 4, 'buena pelicula', '2025-07-26 15:05:43'),
+(13, 0, 244808, 2, 3, 'meah', '2025-07-26 15:06:06');
 
 -- --------------------------------------------------------
 
@@ -150,8 +166,8 @@ ALTER TABLE `blocked_movies`
 -- Indices de la tabla `favorites`
 --
 ALTER TABLE `favorites`
-  ADD PRIMARY KEY (`user_id`,`movie_id`),
-  ADD UNIQUE KEY `unique_fav` (`user_id`,`movie_id`);
+  ADD PRIMARY KEY (`user_id`,`movie_id`,`serie_id`),
+  ADD UNIQUE KEY `unique_fav` (`user_id`,`movie_id`,`serie_id`);
 
 --
 -- Indices de la tabla `movies`
@@ -195,7 +211,7 @@ ALTER TABLE `blocked_movies`
 -- AUTO_INCREMENT de la tabla `ratings`
 --
 ALTER TABLE `ratings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de la tabla `users`
