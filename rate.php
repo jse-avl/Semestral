@@ -97,21 +97,24 @@ try {
 <head>
   <meta charset="UTF-8">
   <title><?= htmlspecialchars($title) ?></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
-<body>
+<body class="animate_animated animate_fadeIn">
   <?php include 'includes/navbar.php'; ?>
 
-  <div class="movie-detail">
-    <h2 class="movie-title"><?= htmlspecialchars($title) ?></h2>
-    <div class="movie-info">
+  <div class="movie-detail animate_animated animate_fadeIn">
+    <h2 class="movie-title animate_animated animate_slideInDown"><?= htmlspecialchars($title) ?></h2>
+    <div class="movie-info animate_animated animate_slideInUp">
       <img src="https://image.tmdb.org/t/p/w300<?= $poster ?>" alt="<?= htmlspecialchars($title) ?>">
       <div class="movie-text">
         <p><strong>Fecha de estreno:</strong> <?= $release ?></p>
         <p><strong>Sinopsis:</strong> <?= htmlspecialchars($overview) ?></p>
         <?php if ($role === 'user' && $userId): ?>
-         <button class="favorite-btn <?= in_array($movie['id'], $favoritos['movie']) ? 'favorited' : '' ?>" data-movie-id="<?= $movie['id'] ?>">
+         <button class="favorite-btn <?= in_array($movieId, $favoritos['movie'] ?? []) ? 'favorited' : '' ?>" data-movie-id="<?= $movieId ?>">
           <i class="fa fa-heart"></i>
         </button>
         <?php endif; ?>
@@ -135,8 +138,8 @@ try {
   </div>
 
   <?php if ($role === 'user'): ?>
-  <form method="POST" class="rating-form">
-    <h3><?= $myRating ? 'Actualizar' : 'Enviar' ?> tu valoración</h3>
+  <form method="POST" class="rating-form animate_animated animate_fadeIn">
+    <h3 class="animate_animated animate_pulse"><?= $myRating ? 'Actualizar' : 'Enviar' ?> tu valoración</h3>
 
     <label>Calificación:</label>
     <div class="star-select">
@@ -154,8 +157,8 @@ try {
   <?php endif; ?>
 
 
-  <div class="comment-section">
-    <h3>🗣️ Opiniones de otros usuarios</h3>
+  <div class="comment-section animate_animated animate_fadeIn">
+    <h3 class="animate_animated animate_slideInLeft">🗣 Opiniones de otros usuarios</h3>
     <?php if (is_array($comentarios) && count($comentarios)): ?>
       <?php
         $suma = 0;
@@ -175,7 +178,7 @@ try {
   <form method="POST" action="/Semestral/admin/delete_comment.php" class="delete-comment-form">
   <input type="hidden" name="comment_id" value="<?= $c['id'] ?>">
   <input type="hidden" name="movie_id" value="<?= $movieId ?>">
-  <button  class="flip-card__btn" type="submit" onclick="return confirm('¿Eliminar este comentario?')">🗑️ Eliminar</button>
+  <button  class="flip-card__btn" type="submit" onclick="return confirm('¿Eliminar este comentario?')">🗑 Eliminar</button>
 </form>
 <?php endif; ?>
       <?php endforeach; ?>
@@ -228,12 +231,20 @@ document.querySelectorAll('.favorite-btn').forEach(btn => {
     document.body.classList.remove('light', 'dark');
     document.body.classList.add(next);
     document.cookie = "theme=" + next + "; path=/; max-age=31536000";
+    localStorage.setItem('theme', next);
     document.getElementById('themeToggle').checked = next === 'dark';
   }
 
   function applyThemeFromCookie() {
-    const match = document.cookie.match(/theme=(light|dark)/);
-    const theme = match ? match[1] : 'light';
+    // Primero intentar obtener el tema desde localStorage
+    let theme = localStorage.getItem('theme');
+    
+    // Si no existe en localStorage, intentar obtenerlo desde cookies
+    if (!theme) {
+      const match = document.cookie.match(/theme=(light|dark)/);
+      theme = match ? match[1] : 'light';
+    }
+    
     document.body.classList.add(theme);
     if (theme === 'dark') {
       document.getElementById('themeToggle').checked = true;
@@ -250,18 +261,18 @@ document.querySelectorAll('.favorite-btn').forEach(btn => {
 </script>
 
 <!-- Footer -->
-<footer class="main-footer">
+<footer class="main-footer animate_animated animate_fadeIn">
   <div class="footer-container">
     <div class="footer-logo">
-      <img src="css/logo2.png" alt="Logo" />
+      <img src="css/logo2.png" alt="RateMyMovie Logo" class="animate_animated animatepulse animate_infinite"/>
       <h3>RateMyMovie</h3>
     </div>
     <div class="footer-social">
       <p>© <?= date('Y') ?> RateMyMovie. Todos los derechos reservados.</p>
       <div class="social-icons">
-        <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-        <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://facebook.com" target="_blank" aria-label="Facebook" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://twitter.com" target="_blank" aria-label="Twitter" class="social-icon"><i class="fab fa-x-twitter"></i></a>
+        <a href="https://instagram.com" target="_blank" aria-label="Instagram" class="social-icon"><i class="fab fa-instagram"></i></a>
       </div>
     </div>
   </div>
