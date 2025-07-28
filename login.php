@@ -92,7 +92,7 @@ if (isset($_SESSION['user'])) {
       showToast('Demasiados intentos. Intenta más tarde.');
     }else if (error === 'invalid_email') {
       showToast('El correo no es válido.');
-    }else{
+    }else if (error === 'good') {
       showToast('Registro exitoso');
     }
   </script>

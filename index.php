@@ -57,7 +57,7 @@ if (isset($_SESSION['user'])) {
 
 $genres = [
   28 => 'Acción',
-  35 => 'Comedia',
+  35 => 'Comedia', 
   18 => 'Drama',
   27 => 'Terror',
   10749 => 'Romance'
@@ -67,25 +67,41 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Películas y Series</title>
+  <title>RateMyMovie - Tu Guía de Películas y Series</title>
+  <meta name="description" content="Descubre, califica y comparte tus películas y series favoritas en RateMyMovie">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 </head>
 <body>
 
 <?php include 'includes/navbar.php'; ?>
 
-<div class="swiper">
-  <h2>🎯 Recomendadas: <?= $nombreGenero ?></h2>
+<!-- Hero Section -->
+<div class="hero-section animate__animated animate__fadeIn">
+  <div class="hero-content">
+    <h1>Bienvenido a RateMyMovie</h1>
+    <p>Tu destino definitivo para descubrir y calificar el mejor contenido</p>
+  </div>
+</div>
+
+<div class="swiper main-slider animate__animated animate__slideInUp">
+  <h2 class="section-title">🎯 Recomendadas: <?= $nombreGenero ?></h2>
   <div class="swiper-wrapper">
     <?php foreach ($recomendadas as $movie): ?>
-      <div class="swiper-slide">
+      <div class="swiper-slide card-hover">
         <a href="rate.php?id=<?= $movie['id'] ?>">
-          <img src="https://image.tmdb.org/t/p/w300<?= $movie['poster_path'] ?>" alt="<?= htmlspecialchars($movie['title']) ?>">
-          <p><?= htmlspecialchars($movie['title']) ?></p>
+          <div class="poster-wrapper">
+            <img src="https://image.tmdb.org/t/p/w300<?= $movie['poster_path'] ?>" alt="<?= htmlspecialchars($movie['title']) ?>">
+            <div class="poster-overlay">
+              <span class="view-details">Ver Detalles</span>
+            </div>
+          </div>
+          <p class="movie-title"><?= htmlspecialchars($movie['title']) ?></p>
           <?php if (isset($valoraciones['movie_' . $movie['id']])): ?>
-            <div class="star-rating">
+            <div class="star-rating animate__animated animate__fadeIn">
               <?php
               $rating = $valoraciones['movie_' . $movie['id']];
               for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
@@ -97,43 +113,57 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
     <?php endforeach; ?>
   </div>
   <div class="swiper-pagination"></div>
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
 </div>
 
-<h3>🎬 Películas</h3>
-<div class="movie-grid">
-  <?php foreach ($peliculas as $movie): ?>
-    <div class="movie-card">
-      <a href="rate.php?id=<?= $movie['id'] ?>">
-        <img src="https://image.tmdb.org/t/p/w200<?= $movie['poster_path'] ?>" alt="<?= htmlspecialchars($movie['title']) ?>">
-        <p><?= htmlspecialchars($movie['title']) ?></p>
-        <?php if (isset($valoraciones['movie_' . $movie['id']])): ?>
-          <div class="star-rating">
-            <?php
-            $rating = $valoraciones['movie_' . $movie['id']];
-            for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
-            ?>
+<section class="content-section animate__animated animate__fadeIn">
+  <h3 class="section-title">🎬 Películas Populares</h3>
+  <div class="movie-grid">
+    <?php foreach ($peliculas as $movie): ?>
+      <div class="movie-card card-hover">
+        <a href="rate.php?id=<?= $movie['id'] ?>">
+          <div class="poster-wrapper">
+            <img src="https://image.tmdb.org/t/p/w200<?= $movie['poster_path'] ?>" alt="<?= htmlspecialchars($movie['title']) ?>">
+            <div class="poster-overlay">
+              <span class="view-details">Ver Detalles</span>
+            </div>
           </div>
+          <p class="movie-title"><?= htmlspecialchars($movie['title']) ?></p>
+          <?php if (isset($valoraciones['movie_' . $movie['id']])): ?>
+            <div class="star-rating">
+              <?php
+              $rating = $valoraciones['movie_' . $movie['id']];
+              for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
+              ?>
+            </div>
+          <?php endif; ?>
+        </a>
+        <?php if ($userId): ?>
+          <button class="favorite-btn pulse <?= in_array($movie['id'], $favoritos['movie']) ? 'favorited' : '' ?>" data-movie-id="<?= $movie['id'] ?>">
+            <i class="fa fa-heart"></i>
+          </button>
         <?php endif; ?>
-      </a>
-      <?php if ($userId): ?>
-        <button class="favorite-btn <?= in_array($movie['id'], $favoritos['movie']) ? 'favorited' : '' ?>" data-movie-id="<?= $movie['id'] ?>">
-          <i class="fa fa-heart"></i>
-        </button>
-      <?php endif; ?>
-    </div>
-  <?php endforeach; ?>
-</div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+</section>
 
-<div class="swiper">
-  <h2>🎯 Series Recomendadas: <?= $nombreGenero ?></h2>
+<div class="swiper series-slider animate__animated animate__slideInUp">
+  <h2 class="section-title">🎯 Series Recomendadas: <?= $nombreGenero ?></h2>
   <div class="swiper-wrapper">
     <?php foreach ($recomendadasSe as $serie): ?>
-      <div class="swiper-slide">
+      <div class="swiper-slide card-hover">
         <a href="rateSerie.php?id=<?= $serie['id'] ?>">
-          <img src="https://image.tmdb.org/t/p/w300<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
-          <p><?= htmlspecialchars($serie['name']) ?></p>
+          <div class="poster-wrapper">
+            <img src="https://image.tmdb.org/t/p/w300<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
+            <div class="poster-overlay">
+              <span class="view-details">Ver Detalles</span>
+            </div>
+          </div>
+          <p class="serie-title"><?= htmlspecialchars($serie['name']) ?></p>
           <?php if (isset($valoraciones['serie_' . $serie['id']])): ?>
-            <div class="star-rating">
+            <div class="star-rating animate__animated animate__fadeIn">
               <?php
               $rating = $valoraciones['serie_' . $serie['id']];
               for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
@@ -145,36 +175,46 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
     <?php endforeach; ?>
   </div>
   <div class="swiper-pagination"></div>
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
 </div>
 
-<h3>📺 Series</h3>
-<div class="movie-grid">
-  <?php foreach ($series as $serie): ?>
-    <div class="movie-card">
-      <a href="rateSerie.php?id=<?= $serie['id'] ?>">
-        <img src="https://image.tmdb.org/t/p/w200<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
-        <p><?= htmlspecialchars($serie['name']) ?></p>
-        <?php if (isset($valoraciones['serie_' . $serie['id']])): ?>
-          <div class="star-rating">
-            <?php
-            $rating = $valoraciones['serie_' . $serie['id']];
-            for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
-            ?>
+<section class="content-section animate__animated animate__fadeIn">
+  <h3 class="section-title">📺 Series Populares</h3>
+  <div class="movie-grid">
+    <?php foreach ($series as $serie): ?>
+      <div class="movie-card card-hover">
+        <a href="rateSerie.php?id=<?= $serie['id'] ?>">
+          <div class="poster-wrapper">
+            <img src="https://image.tmdb.org/t/p/w200<?= $serie['poster_path'] ?>" alt="<?= htmlspecialchars($serie['name']) ?>">
+            <div class="poster-overlay">
+              <span class="view-details">Ver Detalles</span>
+            </div>
           </div>
+          <p class="serie-title"><?= htmlspecialchars($serie['name']) ?></p>
+          <?php if (isset($valoraciones['serie_' . $serie['id']])): ?>
+            <div class="star-rating">
+              <?php
+              $rating = $valoraciones['serie_' . $serie['id']];
+              for ($i = 1; $i <= 5; $i++) echo $i <= $rating ? '★' : '☆';
+              ?>
+            </div>
+          <?php endif; ?>
+        </a>
+        <?php if ($userId): ?>
+          <button class="favorite-btn pulse <?= in_array($serie['id'], $favoritos['serie']) ? 'favorited' : '' ?>" data-serie-id="<?= $serie['id'] ?>">
+            <i class="fa fa-heart"></i>
+          </button>
         <?php endif; ?>
-      </a>
-      <?php if ($userId): ?>
-        <button class="favorite-btn <?= in_array($serie['id'], $favoritos['serie']) ? 'favorited' : '' ?>" data-serie-id="<?= $serie['id'] ?>">
-          <i class="fa fa-heart"></i>
-        </button>
-      <?php endif; ?>
-    </div>
-  <?php endforeach; ?>
-</div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+</section>
 
 <script>
 document.querySelectorAll('.favorite-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
+    btn.addEventListener('click', function() {
+        this.classList.add('animate__animated', 'animate__heartBeat');
         const formData = new FormData();
         const movieId = this.dataset.movieId;
         const serieId = this.dataset.serieId;
@@ -199,15 +239,34 @@ document.querySelectorAll('.favorite-btn').forEach(btn => {
 });
 </script>
 
-<!-- Swiper + Temas -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 <script>
   new Swiper('.swiper', {
-    slidesPerView: 3,
-    spaceBetween: 10,
+    slidesPerView: 1,
+    spaceBetween: 30,
     loop: true,
-    pagination: { el: '.swiper-pagination' },
-    autoplay: { delay: 3000 }
+    effect: 'coverflow',
+    centeredSlides: true,
+    autoplay: {
+      delay: 3000,
+      disableOnInteraction: false,
+    },
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+    breakpoints: {
+      640: {
+        slidesPerView: 2,
+      },
+      768: {
+        slidesPerView: 3,
+      },
+    }
   });
 
   function toggleTheme() {
@@ -235,21 +294,31 @@ document.querySelectorAll('.favorite-btn').forEach(btn => {
     const menu = document.querySelector('.ul');
     menu.classList.toggle('show');
   }
+
+  // Add smooth scroll reveal
+  window.addEventListener('scroll', function() {
+    document.querySelectorAll('.content-section').forEach(section => {
+      const rect = section.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 100) {
+        section.classList.add('animate__fadeIn');
+        section.style.opacity = '1';
+      }
+    });
+  });
 </script>
 
-<!-- Footer -->
-<footer class="main-footer">
+<footer class="main-footer animate__animated animate__fadeIn">
   <div class="footer-container">
     <div class="footer-logo">
-      <img src="css/logo2.png" alt="Logo" />
+      <img src="css/logo2.png" alt="RateMyMovie Logo" class="animate__animated animate__pulse animate__infinite"/>
       <h3>RateMyMovie</h3>
     </div>
     <div class="footer-social">
       <p>© <?= date('Y') ?> RateMyMovie. Todos los derechos reservados.</p>
       <div class="social-icons">
-        <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-        <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
-        <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://facebook.com" target="_blank" aria-label="Facebook" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://twitter.com" target="_blank" aria-label="Twitter" class="social-icon"><i class="fab fa-x-twitter"></i></a>
+        <a href="https://instagram.com" target="_blank" aria-label="Instagram" class="social-icon"><i class="fab fa-instagram"></i></a>
       </div>
     </div>
   </div>

@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt = $pdo->prepare("INSERT INTO users (username, email, password, favorite_genre) VALUES (?, ?, ?, ?)");
                     $stmt->execute([$username, $email, $password, $genre]);
 
-                    header("Location: login.php");
+                    header("Location: login.php?error=good");
                     exit;
                 } catch (PDOException $e) {
                     error_log("Database error during registration: " . $e->getMessage());
