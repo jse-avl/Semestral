@@ -25,48 +25,73 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             max-width: 1200px;
             margin: 40px auto;
             padding: 20px;
-            border-radius: 5px;border-radius: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
         }
         body.light .container {
-            background-color: #fff;
+            border: 1px solid #eaeaea;
         }
         body.dark .container {
-            background-color: #333;
-            color: #fff;
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            border: 1px solid var(--dark-shadow);
         }
         body.light h2 {
-            color: #333;
+            color: #2c3e50;
         }
         body.dark h2 {
-            color: #fff;
+            color: #ecf0f1;
         }
         h2 {
-            margin-bottom: 20px;
-            color: #333;
-            font-size: 24px;
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 15px;
         }
         th, td {
-            padding: 10px 14px;
-            border: 1px solid #ddd;
+            padding: 12px 16px;
             text-align: left;
+            border: 1px solid;
+            transition: all 0.3s ease;
+        }
+        body.light th, body.light td {
+            border-color: #e0e0e0;
+        }
+        body.dark th, body.dark td {
+            border-color: var(--dark-shadow);
         }
         body.light th {
-            background-color: #efefef;
+            background-color: #f8f9fa;
+            color: var(--light-navbar);
         }
         body.dark th {
-            background-color: #555;
+            background-color: var(--dark-hover);
+            color: var(--dark-text);  
         }
         a.action-link {
-            color: #007acc;
+            color: #3498db;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        body.dark a.action-link {
+            color: #5dade2;
         }
         a.action-link:hover {
-            text-decoration: underline;
+            background-color: rgba(52, 152, 219, 0.1);
+            text-decoration: none;
+        }
+        body.dark a.action-link:hover {
+            background-color: rgba(93, 173, 226, 0.2);
         }
     </style>
 </head>

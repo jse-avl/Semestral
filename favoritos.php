@@ -1,7 +1,7 @@
 <?php
 session_start();
 require 'db.php';
-require 'tmdb.php'; // Asegúrate de que aquí también esté la función getSerieById
+require 'tmdb.php'; 
 
 if (!isset($_SESSION['user'])) {
   header("Location: login.php?error=auth_required");
@@ -43,7 +43,7 @@ foreach ($favs as $fav) {
         'id' => $serie['id'],
         'title' => htmlspecialchars($serie['name'] ?? 'Sin título', ENT_QUOTES, 'UTF-8'),
         'poster_path' => $serie['poster_path'] ?? '',
-        'type' => 'serie'
+        'type' => 'tv'  // Changed from 'serie' to 'tv' to match TMDB naming
       ];
     }
   }
@@ -83,7 +83,7 @@ foreach ($favs as $fav) {
     <div class="movie-grid">
       <?php foreach ($favoritos as $item): ?>
         <div class="movie-card">
-          <a href="<?= $item['type'] === 'movie' ? 'rate.php?id=' : 'rate_serie.php?id=' ?><?= $item['id'] ?>">
+          <a href="<?= $item['type'] === 'movie' ? 'rate.php?id=' : 'rateSerie.php?id=' ?><?= $item['id'] ?>">
             <?php if ($item['poster_path']): ?>
               <img src="https://image.tmdb.org/t/p/w200<?= htmlspecialchars($item['poster_path'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= $item['title'] ?>">
             <?php else: ?>

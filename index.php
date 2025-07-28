@@ -80,7 +80,7 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
 <?php include 'includes/navbar.php'; ?>
 
 <!-- Hero Section -->
-<div class="hero-section animate__animated animate__fadeIn">
+<div class="hero">
   <div class="hero-content">
     <h1>Bienvenido a RateMyMovie</h1>
     <p>Tu destino definitivo para descubrir y calificar el mejor contenido</p>

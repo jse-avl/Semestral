@@ -4,7 +4,7 @@
   <button class="menu-toggle" onclick="toggleMenu()">☰</button>
 
   <ul class="ul">
-    <li><a href="/Semestral/index.php"><i class="fa-solid fa-house"></i>Inicio</a></li>
+    <li id="cat"><a href="/Semestral/index.php"><i class="fa-solid fa-house"></i>Inicio</a></li>
     
     <?php if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin'): ?>
       <li id="cat">
@@ -23,7 +23,7 @@
       <li id="cat">
         <a href="/Semestral/admin/dashboard.php"><i class="fa-solid fa-shield-halved"></i>Moderación</a>
       </li>
-      <li>
+      <li id="cat">
         <a href="/Semestral/logout.php"><i class="fa-solid fa-right-from-bracket"></i>Salir</a>
       </li>
     <?php elseif (isset($_SESSION['user'])): ?>
@@ -36,7 +36,7 @@
         </ul>
       </li>
     <?php else: ?>
-      <li><a href="/Semestral/login.php">Iniciar sesión</a></li>
+      <li id="cat"><a href="/Semestral/login.php">Iniciar sesión</a></li>
     <?php endif; ?>
 
   </ul>

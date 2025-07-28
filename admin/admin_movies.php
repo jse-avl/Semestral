@@ -39,41 +39,90 @@ $blocked = $pdo->query("SELECT movie_id FROM blocked_movies")->fetchAll(PDO::FET
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         .container {
-           max-width: 1200px; margin: 40px auto; padding: 20px; border-radius: 5px;
-          }
-          body.light .container {
-            background-color: #fff;
-          }
-          body.dark .container {
-            background-color: #333;
-            color: #fff;
-          }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px 14px; border: 1px solid #ddd; text-align: left; vertical-align: top; }
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        body.light .container {
+            border: 1px solid #eee;
+        }
+        body.dark .container {
+            background-color:var(--dark-bg);  
+            color: var(--dark-text);
+            border: 1px solid var(--dark-shadow);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px 16px;
+            border: 1px solid var(--dark-shadow); 
+            text-align: left;
+            vertical-align: top;
+            line-height: 1.4;
+        }
         body.light th {
-            background-color: #efefef;
+            background-color: var(--light-bg);  
+            border-bottom: 2px solid #dee2e6;
         }
         body.dark th {
-            background-color: #555;
+            background-color: var(--dark-hover);
+            border-bottom: 2px solid #555;
         }
-        h2 { margin-bottom: 20px; }
-        a.block-link { color: crimson; text-decoration: none; font-weight: bold; }
-        a.unblock-link { color: green; text-decoration: none; font-weight: bold; }
-        a:hover { text-decoration: underline; }
+        h2 {
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            color: inherit;
+        }
+        a.block-link {
+            color: #dc3545;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        a.unblock-link {
+            color: #28a745;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        a.block-link:hover, a.unblock-link:hover {
+            text-decoration: none;
+            background-color: rgba(0,0,0,0.05);
+            transform: translateY(-1px);
+        }
         .content-toggle {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 12px;
         }
         .content-toggle a {
-            padding: 8px 16px;
+            padding: 10px 20px;
             text-decoration: none;
-            color: #333;
-            background: #f0f0f0;
-            border-radius: 4px;
-            margin-right: 10px;
+            color: #555;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--dark-shadow);
         }
         .content-toggle a.active {
-            background: #007bff;
+            background: var(--light-hover);
             color: white;
+            border-color: var(--light-hover);
+            box-shadow: 0 2px 4px rgba(13,110,253,0.2);
+        }
+        .content-toggle a:hover:not(.active) {
+            background: var(--dark-hover);
+            color: white;
+            transform: translateY(-1px);
         }
     </style>
 </head>
