@@ -25,8 +25,20 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             max-width: 1200px;
             margin: 40px auto;
             padding: 20px;
+            border-radius: 5px;border-radius: 5px;
+        }
+        body.light .container {
             background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        body.dark .container {
+            background-color: #333;
+            color: #fff;
+        }
+        body.light h2 {
+            color: #333;
+        }
+        body.dark h2 {
+            color: #fff;
         }
         h2 {
             margin-bottom: 20px;
@@ -42,8 +54,11 @@ $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             border: 1px solid #ddd;
             text-align: left;
         }
-        th {
+        body.light th {
             background-color: #efefef;
+        }
+        body.dark th {
+            background-color: #555;
         }
         a.action-link {
             color: #007acc;

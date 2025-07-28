@@ -4,6 +4,18 @@
   Deny from all
 </FilesMatch>
 
+<Files "db.php">
+  Order allow,deny
+  Deny from all
+</Files>
+<Files "soap_server.php">
+  Order allow,deny
+  Deny from all
+</Files>
+<Files "tmdb.php">
+  Order allow,deny
+  Deny from all
+</Files>
 # Seguridad contra XSS
 Header set X-XSS-Protection "1; mode=block"
 
@@ -24,3 +36,4 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.+)$ index.php [QSA,L]
+

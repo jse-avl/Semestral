@@ -36,16 +36,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
     <div class="admin-card">
       <i class="fa-solid fa-film fa-2x"></i>
-      <h2>Películas</h2>
-      <p>Agregar, editar o eliminar</p>
+      <h2>Películas y series</h2>
+      <p>Bloquear o Desbloquear</p>
       <a href="/Semestral/admin/admin_movies.php">Ver más →</a>
-    </div>
-
-    <div class="admin-card">
-      <i class="fa-solid fa-comment-dots fa-2x"></i>
-      <h2>Reseñas</h2>
-      <p>Moderación de contenido</p>
-      <a href="/Semestral/admin/admin_comments.php">Ver más →</a>
     </div>
   </div>
 </div>

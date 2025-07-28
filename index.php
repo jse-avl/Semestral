@@ -67,7 +67,7 @@ $nombreGenero = htmlspecialchars($genres[$genreId] ?? 'Todas', ENT_QUOTES, 'UTF-
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Películas y Series Recomendadas</title>
+  <title>Películas y Series</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -254,3 +254,5 @@ document.querySelectorAll('.favorite-btn').forEach(btn => {
     </div>
   </div>
 </footer>
+</body>
+</html>

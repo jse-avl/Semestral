@@ -51,7 +51,7 @@
   </div>
 
   <div class="user-info">
-    Hola 👋 <?= htmlspecialchars($_SESSION['user'] ?? ($_SESSION['role'] === 'admin' ? 'Administrador' : 'Invitado')) ?>
+    Hola 👋 <?= htmlspecialchars(isset($_SESSION['user']) ? $_SESSION['user'] : (isset($_SESSION['role']) && $_SESSION['role'] === 'admin' ? 'Administrador' : 'Invitado')) ?>
   </div>
 
   <div class="theme-switch-wrapper">

@@ -53,10 +53,12 @@ $stmtCheck->execute([$movieId, $userId]);
 $myRating = $stmtCheck->fetch();
 
 // Verificar si ya es favorita
-$stmtFav = $pdo->prepare("SELECT COUNT(*) FROM favorites WHERE user_id = ? AND movie_id = ?");
-$stmtFav->execute([$userId, $movieId]);
-$isFavorite = $stmtFav->fetchColumn() > 0;
-
+ $stmtFavs = $pdo->prepare("SELECT movie_id, serie_id FROM favorites WHERE user_id = ?");
+    $stmtFavs->execute([$userId]);
+    foreach ($stmtFavs->fetchAll() as $fav) {
+      if ($fav['movie_id']) $favoritos['movie'][] = $fav['movie_id'];
+     
+    }
 // Procesar nueva valoración
 $rating = isset($_POST['rating']) ? (int) $_POST['rating'] : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -109,10 +111,10 @@ try {
         <p><strong>Fecha de estreno:</strong> <?= $release ?></p>
         <p><strong>Sinopsis:</strong> <?= htmlspecialchars($overview) ?></p>
         <?php if ($role === 'user' && $userId): ?>
-  <button id="favoriteBtn" class="fav-btn" onclick="toggleFavorite(<?= $movieId ?>)">
-    <?= $isFavorite ? '💔 Quitar de Favoritos' : '❤️ Agregar a Favoritos' ?>
-  </button>
-<?php endif; ?>
+         <button class="favorite-btn <?= in_array($movie['id'], $favoritos['movie']) ? 'favorited' : '' ?>" data-movie-id="<?= $movie['id'] ?>">
+          <i class="fa fa-heart"></i>
+        </button>
+        <?php endif; ?>
       </div>
     </div>
 
@@ -173,7 +175,7 @@ try {
   <form method="POST" action="/Semestral/admin/delete_comment.php" class="delete-comment-form">
   <input type="hidden" name="comment_id" value="<?= $c['id'] ?>">
   <input type="hidden" name="movie_id" value="<?= $movieId ?>">
-  <button type="submit" onclick="return confirm('¿Eliminar este comentario?')">🗑️ Eliminar</button>
+  <button  class="flip-card__btn" type="submit" onclick="return confirm('¿Eliminar este comentario?')">🗑️ Eliminar</button>
 </form>
 <?php endif; ?>
       <?php endforeach; ?>
@@ -182,35 +184,87 @@ try {
     <?php endif; ?>
   </div>
 
-  <script>
-    function toggleTheme() {
-      const current = document.body.classList.contains('dark') ? 'dark' : 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.body.classList.remove(current);
-      document.body.classList.add(next);
-      document.cookie = "theme=" + next + "; path=/; max-age=31536000";
-    }
+  
+<script>
+document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const formData = new FormData();
+        const movieId = this.dataset.movieId;
+        const serieId = this.dataset.serieId;
 
-    function applyThemeFromCookie() {
-      const match = document.cookie.match(/theme=(light|dark)/);
-      const theme = match ? match[1] : 'light';
-      document.body.classList.add(theme);
-    }
+        if (movieId) formData.append('movie_id', movieId);
+        if (serieId) formData.append('serie_id', serieId);
 
-    applyThemeFromCookie();
-
-    function toggleFavorite(movieId) {
-      fetch('toggle_favorite.php?id=' + movieId)
+        fetch('toggle_favorite.php', {
+            method: 'POST',
+            body: formData
+        })
         .then(res => res.json())
         .then(data => {
-          const btn = document.getElementById('favoriteBtn');
-          if (data.status === 'added') {
-            btn.textContent = '💔 Quitar de Favoritos';
-          } else if (data.status === 'removed') {
-            btn.textContent = '❤️ Agregar a Favoritos';
-          }
-        });
+            if (data.status === 'added') {
+                this.classList.add('favorited');
+            } else if (data.status === 'removed') {
+                this.classList.remove('favorited');
+            }
+        })
+        .catch(err => console.error('Error:', err));
+    });
+});
+</script>
+<!-- Swiper + Temas -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+<script>
+  new Swiper('.swiper', {
+    slidesPerView: 3,
+    spaceBetween: 10,
+    loop: true,
+    pagination: { el: '.swiper-pagination' },
+    autoplay: { delay: 3000 }
+  });
+
+  function toggleTheme() {
+    const isDark = document.body.classList.contains('dark');
+    const next = isDark ? 'light' : 'dark';
+    document.body.classList.remove('light', 'dark');
+    document.body.classList.add(next);
+    document.cookie = "theme=" + next + "; path=/; max-age=31536000";
+    document.getElementById('themeToggle').checked = next === 'dark';
+  }
+
+  function applyThemeFromCookie() {
+    const match = document.cookie.match(/theme=(light|dark)/);
+    const theme = match ? match[1] : 'light';
+    document.body.classList.add(theme);
+    if (theme === 'dark') {
+      document.getElementById('themeToggle').checked = true;
     }
-  </script>
+  }
+  applyThemeFromCookie();
+</script>
+
+<script>
+  function toggleMenu() {
+    const menu = document.querySelector('.ul');
+    menu.classList.toggle('show');
+  }
+</script>
+
+<!-- Footer -->
+<footer class="main-footer">
+  <div class="footer-container">
+    <div class="footer-logo">
+      <img src="css/logo2.png" alt="Logo" />
+      <h3>RateMyMovie</h3>
+    </div>
+    <div class="footer-social">
+      <p>© <?= date('Y') ?> RateMyMovie. Todos los derechos reservados.</p>
+      <div class="social-icons">
+        <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+        <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

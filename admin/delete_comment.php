@@ -2,9 +2,24 @@
 session_start();
 require '../db.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_id'], $_POST['movie_id'])) {
+// Check if request is POST and from the same domain
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_SERVER['HTTP_REFERER']) || 
+    parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST) !== $_SERVER['HTTP_HOST']) {
+    header("HTTP/1.1 403 Forbidden");
+    exit();
+}
+
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header("Location: ../login.php");
+    exit;
+}
+
+if (isset($_POST['comment_id']) && (isset($_POST['movie_id']) || isset($_POST['serie_id']))) {
     $commentId = (int) $_POST['comment_id'];
-    $movieId = (int) $_POST['movie_id'];
+    $movieId = isset($_POST['movie_id']) ? (int) $_POST['movie_id'] : null;
+    $serieId = isset($_POST['serie_id']) ? (int) $_POST['serie_id'] : null;
+    
+    $returnPath = $movieId !== null ? "rate.php?id=$movieId" : "rateSerie.php?id=$serieId";
 
     if ($_SESSION['role'] === 'admin') {
         try {
@@ -17,22 +32,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['comment_id'], $_POST[
             $result = json_decode($response, true);
 
             if ($result['status'] === 'success') {
-                header("Location: /Semestral/rate.php?id=$movieId&deleted=1");
+                header("Location: /Semestral/$returnPath&deleted=1");
                 exit;
             } else {
-                header("Location: /Semestral/rate.php?id=$movieId&error=" . urlencode($result['message']));
+                header("Location: /Semestral/$returnPath&error=" . urlencode($result['message']));
                 exit;
             }
         } catch (SoapFault $e) {
-            header("Location: /Semestral/rate.php?id=$movieId&error=" . urlencode($e->getMessage()));
+            header("Location: /Semestral/$returnPath&error=" . urlencode($e->getMessage()));
             exit;
         }
     } else {
-        header("Location: /Semestral/rate.php?id=$movieId&error=No autorizado");
+        header("Location: /Semestral/$returnPath&error=No autorizado");
         exit;
     }
 } else {
-    $movieId = isset($_POST['movie_id']) ? (int) $_POST['movie_id'] : 0;
-    header("Location: /Semestral/rate.php?id=$movieId&error=Solicitud inválida");
+    $returnId = isset($_POST['movie_id']) ? (int) $_POST['movie_id'] : (isset($_POST['serie_id']) ? (int) $_POST['serie_id'] : 0);
+    $returnPath = isset($_POST['movie_id']) ? "rate.php?id=$returnId" : "rateSerie.php?id=$returnId";
+    header("Location: /Semestral/$returnPath&error=Solicitud inválida");
     exit;
 }
